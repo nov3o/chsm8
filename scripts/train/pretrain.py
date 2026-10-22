@@ -50,7 +50,7 @@ params = [p for p in model.parameters() if p.requires_grad]
 opt = torch.optim.AdamW(params, lr=c.lr, betas=(0.9, 0.95), weight_decay=c.weight_decay, fused=device == "cuda")
 if master:
     print(f"{n_params(model) / 1e6:.1f}M parameters, {sum(p.numel() for p in params) / 1e6:.1f}M trained, "
-          f"{world} GPU(s)", flush=True)
+          f"{world} process(es)", flush=True)
 
 # ---- data and budget
 train, val = PackedData(c.data, "train"), PackedData(c.data, "val")

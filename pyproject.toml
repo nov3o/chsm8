@@ -4,7 +4,11 @@ version = "0.1.0"
 description = "CHSM8: a chess move model conditioned on natural-language style descriptions"
 license = "MIT"
 requires-python = ">=3.10"
-dependencies = ["torch", "numpy", "pyarrow", "pyyaml", "python-chess", "huggingface_hub", "datasets", "transformers", "sentence-transformers", "chsm8_tok"]
+dependencies = ["torch", "numpy", "pyarrow", "pyyaml", "python-chess", "huggingface_hub", "datasets", "transformers"]  # chsm8_tok: see README
+
+[project.optional-dependencies]
+label = ["vllm"]
+notebooks = ["jupyter"]
 
 [tool.setuptools]
 packages = ["chsm8"]

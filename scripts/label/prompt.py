@@ -245,6 +245,9 @@ def card(sf, color, n_moves, elo, opp_elo, opening, eco, tc_base, tc_increment):
 
 # ------------------------------------------------------------------ prompts
 
+MAX_PLIES = 80  # the move list stops after move 40; the card still measures the whole game
+
+
 def context(uci_moves, side, white_elo=None, black_elo=None, tc_base=None, tc_increment=None, opening="", eco=""):
     """The game-specific part of the prompt: which side, the moves in SAN, the measured card."""
     board, moves, san = chess.Board(), [], []
@@ -254,7 +257,9 @@ def context(uci_moves, side, white_elo=None, black_elo=None, tc_base=None, tc_in
         board.push(m)
         moves.append(m)
     sides, n_plies = measure(moves)
-    text = " ".join(f"{i // 2 + 1}. {s}" if i % 2 == 0 else s for i, s in enumerate(san))
+    text = " ".join(f"{i // 2 + 1}. {s}" if i % 2 == 0 else s for i, s in enumerate(san[:MAX_PLIES]))
+    if len(san) > MAX_PLIES:
+        text += " ..."
     white = side == "white"
     c = card(sides[white], side, (n_plies + 1) // 2, white_elo if white else black_elo,
              black_elo if white else white_elo, opening, eco, tc_base, tc_increment)

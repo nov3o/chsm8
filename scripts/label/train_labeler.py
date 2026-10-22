@@ -117,12 +117,12 @@ def main():
         dist.init_process_group("nccl")
         torch.cuda.set_device(int(os.environ["LOCAL_RANK"]))
     rank, world = (dist.get_rank(), dist.get_world_size()) if ddp else (0, 1)
-    device = torch.device("cuda", torch.cuda.current_device())
+    device = torch.device("cuda", torch.cuda.current_device()) if torch.cuda.is_available() else torch.device("cpu")
     tok = AutoTokenizer.from_pretrained(a.model)
-    ds = load_dataset(a.data, split="train")
-    if a.max_examples:
-        ds = ds.select(range(a.max_examples))
-    ds = ds.shard(world, rank)
+    if a.max_examples:  # a small run: stream the first rows instead of downloading the dataset
+        ds = list(load_dataset(a.data, split="train", streaming=True).take(a.max_examples))[rank::world]
+    else:
+        ds = load_dataset(a.data, split="train").shard(world, rank)
 
     def encode(r):
         p = tok(prompt(compact(r["user"])), add_special_tokens=True)["input_ids"][-a.max_in:]
@@ -136,7 +136,7 @@ def main():
     model = AutoModelForCausalLM.from_pretrained(a.model, dtype=torch.bfloat16, attn_implementation="sdpa").to(device)
     model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
     dmodel = torch.nn.parallel.DistributedDataParallel(model, device_ids=[device.index]) if ddp else model
-    opt = torch.optim.AdamW(model.parameters(), lr=a.lr, betas=(0.9, 0.95), weight_decay=0.0, fused=True)
+    opt = torch.optim.AdamW(model.parameters(), lr=a.lr, betas=(0.9, 0.95), weight_decay=0.0, fused=device.type == "cuda")
     rng = random.Random(a.seed + rank)
     epoch_batches = list(batches(examples, a.batch_tokens, rng))
     n = torch.tensor(len(epoch_batches), device=device)
@@ -152,14 +152,15 @@ def main():
             for g in opt.param_groups:
                 g["lr"] = lr
             inputs, lab = collate([examples[j] for j in idx], tok.pad_token_id, device)
-            with torch.autocast("cuda", dtype=torch.bfloat16):
+            with torch.autocast(device.type, dtype=torch.bfloat16, enabled=device.type == "cuda"):
                 loss = token_nll(dmodel, inputs, lab).sum() / (lab >= 0).sum()
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             opt.step()
             opt.zero_grad(set_to_none=True)
             step += 1
-            ema = float(loss) if ema is None else 0.98 * ema + 0.02 * float(loss)
+            l = float(loss.detach())
+            ema = l if ema is None else 0.98 * ema + 0.02 * l
             if rank == 0 and step % 25 == 0:
                 print(f"step {step:,}/{total:,} | loss {ema:.4f} | lr {lr:.2e} | {time.time() - t0:.0f}s", flush=True)
         epoch_batches = list(batches(examples, a.batch_tokens, rng))

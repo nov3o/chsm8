@@ -46,7 +46,7 @@ opt = torch.optim.AdamW(groups, betas=(0.9, 0.95), weight_decay=c.weight_decay, 
 params = [p for g in groups for p in g["params"]]
 if master:
     print(f"{n_params(model) / 1e6:.1f}M parameters, {sum(p.numel() for p in groups[0]['params']) / 1e6:.1f}M text "
-          f"path + {sum(p.numel() for p in groups[1]['params']) / 1e6:.1f}M decoder trained, {world} GPU(s)", flush=True)
+          f"path + {sum(p.numel() for p in groups[1]['params']) / 1e6:.1f}M decoder trained, {world} process(es)", flush=True)
 
 # ---- data: a fixed schedule of batches, the same length on every rank
 rng = np.random.default_rng(c.seed)
