@@ -1,0 +1,26 @@
+# A tiny CHSM8 (4 layers x 128, ~1M parameters) on a small slice of the pre-training data: minutes on a laptop.
+# Same code and loss as chsm8-pt; only the sizes are scaled down. Used by notebooks/nano.ipynb.
+data: data/nano
+out: runs/nano
+init: ""
+n_layers: 4
+d_model: 128
+n_heads: 4
+d_ff: 512
+train_no_text: false
+focal_only: false
+batch_size: 16
+max_positions: 0
+passes: 1
+lr: 2.0e-3
+warmup: 0.05
+min_lr_ratio: 0.1
+weight_decay: 0.1
+grad_clip: 1.0
+legal_penalty: 0.5
+compile: false
+seed: 42
+log_every: 20
+eval_every: 200
+eval_batches: 10
+save_every: 1000000

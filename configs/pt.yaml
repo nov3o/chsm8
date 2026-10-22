@@ -1,0 +1,26 @@
+# chsm8-pt: pretraining from scratch on chsm8-pre-training (one pass, 78.32B positions).
+# Ran on one node of 4 GH200 in about 40 hours (541.8k positions/s).
+data: data/pt              # scripts/data/prepare_pretraining.py
+out: runs/pt
+init: ""                   # "" = from scratch
+n_layers: 12
+d_model: 960
+n_heads: 15
+d_ff: 3520
+train_no_text: false       # the pretraining scaffold's constant stays frozen
+focal_only: false          # loss on both sides' moves
+batch_size: 32             # records of 512 positions per GPU: 4 GPUs x 32 x 512 = 65,536 positions per step
+max_positions: 78320318976 # one pass over the training records
+passes: 0                  # 0 = use max_positions
+lr: 5.0e-4
+warmup: 0.05               # fraction of positions
+min_lr_ratio: 0.1          # cosine decays to 10% of the peak
+weight_decay: 0.1
+grad_clip: 1.0
+legal_penalty: 0.5
+compile: false
+seed: 42
+log_every: 200
+eval_every: 20000
+eval_batches: 20
+save_every: 5000

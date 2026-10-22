@@ -1,0 +1,26 @@
+# chsm8-player-<name>: chsm8-player-base fine-tuned on one player's own moves (the opponent's moves are context),
+# two passes over the player's training games. Pick the player with --data=data/players/<name>.
+data: data/players/carlsen # scripts/data/prepare_players.py --packed
+out: runs/player_carlsen
+init: LegumMagister/chsm8-player-base:model.pt
+n_layers: 12
+d_model: 960
+n_heads: 15
+d_ff: 3520
+train_no_text: true
+focal_only: true
+batch_size: 32
+max_positions: 0
+passes: 2
+lr: 3.0e-5
+warmup: 0.05
+min_lr_ratio: 0.0
+weight_decay: 0.1
+grad_clip: 1.0
+legal_penalty: 0.5
+compile: false
+seed: 42
+log_every: 10
+eval_every: 50
+eval_batches: 10
+save_every: 1000
