@@ -245,7 +245,7 @@ settings are in [`results/`](results/README.md).
 | [chsm8-post-training](https://huggingface.co/datasets/LegumMagister/chsm8-post-training) | 30M game sides × five descriptions |
 | [chsm8-distillation](https://huggingface.co/datasets/LegumMagister/chsm8-distillation) | 2.4M clean teacher sets, for the labeler |
 | [chsm8-game-labels](https://huggingface.co/datasets/LegumMagister/chsm8-game-labels) | every teacher set |
-| [chsm8-top-players](https://huggingface.co/datasets/LegumMagister/chsm8-top-players) | games of the 14 public players |
+| [chsm8-top-players](https://huggingface.co/datasets/LegumMagister/chsm8-top-players) | games of 99 FIDE top-100 players and 4 historical players: the 14 player-model corpora and SFT's player prompts |
 
 ## 13. What's in the repo
 
@@ -259,7 +259,7 @@ src/                    the training and evaluation code of our runs, as it ran
   build_*.py              packed-data builders
   labeler/                labeler training (train.py), labeling (label_shards.py), prompts (build_data.py)
 prompt-ablation/        the teacher: prompt and card builder (autolabel/), production labeling script
-prep/                   Hugging Face datasets -> the formats above
+prep/                   Hugging Face datasets -> the formats above; select_sides.py: the described sides from the 1B games
 recipes/                0_data.sh ... 9_eval.sh: our exact commands, one per stage; raw_lichess.sh,
                         label_cleaning.sh, paper_eval.sh
 notebooks/              nano (the pipeline on a CPU), full (the recipes), play, tokenizer
