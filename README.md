@@ -123,8 +123,7 @@ STAGES="post players" bash recipes/0_data.sh
 The rebuilt player packs and SFT player corpus are byte-identical to the ones our models trained on.
 
 To build chsm8-pre-training itself from the raw Lichess archive (download, filter, export), run `recipes/raw_lichess.sh`.
-The 30.1M described sides (players rated 2200 or more) are the `(month, row_idx, side)` rows of chsm8-post-training; the
-one-off script that selected them is not in this repo.
+The 30.1M described sides (players rated 2200 or more) are chsm8-post-training itself.
 
 ## 6. Pretraining
 
