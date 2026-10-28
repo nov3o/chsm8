@@ -120,7 +120,11 @@ STAGES="post players" bash recipes/0_data.sh
 | `players` | chsm8-top-players | `data/players/<key>` (one pack per player), `data/sft_players` | `src/train_pretrain.py`, `src/sft_ablate.py` |
 | `labeler` | chsm8-distillation | `data/labeler/{train,val,test}.jsonl` | `src/labeler/train.py` |
 
-The rebuilt player packs are byte-identical to the ones our models trained on.
+The rebuilt player packs and SFT player corpus are byte-identical to the ones our models trained on.
+
+To build chsm8-pre-training itself from the raw Lichess archive (download, filter, export), run `recipes/raw_lichess.sh`.
+The 30.1M described sides (players rated 2200 or more) are the `(month, row_idx, side)` rows of chsm8-post-training; the
+one-off script that selected them is not in this repo.
 
 ## 6. Pretraining
 
@@ -158,6 +162,9 @@ bash recipes/5_labeler.sh                 # src/labeler/train.py
 bash recipes/6_label.sh                   # src/labeler/build_unlabeled.py, then src/labeler/label_shards.py per GPU
 ```
 
+How the labels were cleaned (grounding check, clean filter, repair of contradicted bands, the Apertus relabel) is in
+[`recipes/label_cleaning.sh`](recipes/label_cleaning.sh), with the exact scripts.
+
 ## 8. SFT: learning to follow text
 
 **chsm8-sft**: chsm8-pt plus cross-attention to the frozen EmbeddingGemma-300m in its top 6 layers. One pass over 27.1M
@@ -168,7 +175,8 @@ side's moves only; the opponent's moves are context. 8 GPUs, 3.1 hours.
 bash recipes/7_sft.sh                     # src/sft_ablate.py
 ```
 
-Our SFT used the games of 99 top players; 14 of them are public, so this reproduces SFT with those 14.
+The player prompts use the online games of 99 FIDE top-100 players, all in [chsm8-top-players](https://huggingface.co/datasets/LegumMagister/chsm8-top-players)
+(`prep/players.py --sft` rebuilds our corpus byte for byte).
 
 ## 9. DPO: making the text matter
 
@@ -211,6 +219,9 @@ bash recipes/9_eval.sh text checkpoints/dpo_v21/v21_label_kl1.pt dpo "trade quee
 | chsm8 | 1797 |
 | chsm8-player-base | 1890 |
 
+The paper's other evaluations (matches against 16 public models, Bradley–Terry, self-play style, player prompts, the
+labeler's distillation score, label diversity) are listed with their scripts in [`recipes/paper_eval.sh`](recipes/paper_eval.sh).
+
 Every match we logged, all head-to-head games against the public models, and all 299 search runs with their
 settings are in [`results/`](results/README.md).
 
@@ -247,7 +258,8 @@ src/                    the training and evaluation code of our runs, as it ran
   labeler/                labeler training (train.py), labeling (label_shards.py), prompts (build_data.py)
 prompt-ablation/        the teacher: prompt and card builder (autolabel/), production labeling script
 prep/                   Hugging Face datasets -> the formats above
-recipes/                0_data.sh ... 9_eval.sh: our exact commands, one per stage
+recipes/                0_data.sh ... 9_eval.sh: our exact commands, one per stage; raw_lichess.sh,
+                        label_cleaning.sh, paper_eval.sh
 notebooks/              nano (the pipeline on a CPU), full (the recipes), play, tokenizer
 chsm8/                  a small library to load the released models and play with them
 results/                every logged match and search run
@@ -256,6 +268,12 @@ results/                every logged match and search run
 The scripts in `src/` and `prompt-ablation/` are copies of what ran. Changes: local paths made repo-relative, and
 CPU fallbacks in `dpo_sft.py`, `eval_sft.py`, `benchmark_play.py` and `scripts/eval_player_fit.py` so the nano notebook
 runs without a GPU (GPU behaviour unchanged). Runs on other hardware give models of the same quality, not the same weights.
+
+The architecture and hyperparameter searches (autoresearch) ran on a copy of
+[karpathy/autoresearch](https://github.com/karpathy/autoresearch) adapted to chess; the harness is not included, its
+runs and settings are in [`results/autoresearch.csv`](results/autoresearch.csv). Matches against public models use
+[searchless_chess](https://github.com/google-deepmind/searchless_chess) and
+[chess_gpt_eval](https://github.com/adamkarvonen/chess_gpt_eval) as external checkouts.
 
 ## License
 

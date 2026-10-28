@@ -16,10 +16,10 @@ post)  # chsm8-post-training + moves -> data/sft30m_v21 (SFT, DPO) and data/game
   python src/build_games_packed.py --source pool --out data/games30m --workers $W ;;
 players)  # chsm8-top-players -> data/players/<key> (player fine-tunes) and data/sft_players (player prompts in SFT)
   python prep/players.py
-  mkdir -p data/openings
-  for f in a b c d e; do curl -sL https://raw.githubusercontent.com/lichess-org/chess-openings/master/$f.tsv -o data/openings/$f.tsv; done
+  mkdir -p data && cp -r prep/openings data/   # the Lichess chess-openings table (CC0) as we used it
   for f in data/top_players/games/*.jsonl; do k=$(basename $f .jsonl)
     python src/build_games_packed.py --source players --inputs $f --out data/players/$k --holdout 2000 --repeat-to 20000; done
+  python prep/players.py --sft   # SFT player prompts: the 99-player crawl of our run (after the 14 packs above)
   python src/build_player_corpus.py --out data/sft_players --workers $W ;;
 labeler)  # chsm8-distillation -> data/labeler/{train,val,test}.jsonl
   python prep/labeler.py ;;
