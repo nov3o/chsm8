@@ -6,7 +6,8 @@ set -euo pipefail
 CKPT=${CKPT:-runs/labeler/ckpt_full_gemma3_1b_clean}; IN=${IN:-data/unlabeled}; OUT=${OUT:-data/labels_distilled}
 N=${NGPU:-$(nvidia-smi -L | wc -l)}
 if [ ! -d "$IN" ]; then
-  # the sides to label (here: every side of data/chsm8-post-training-unlabeled) and the sides already labeled (none)
+  # the sides to label (here: every side of data/chsm8-post-training-unlabeled; or select fresh ones from the 1B games
+  # with prep/select_sides.py) and the sides already labeled (none)
   [ -f data/4/player_game_index.parquet ] || python -c "
 import os, pyarrow.dataset as ds, pyarrow.parquet as pq
 t = ds.dataset('data/chsm8-post-training-unlabeled/data').to_table(columns=['month', 'row_idx', 'side', 'player_elo'])

@@ -123,7 +123,10 @@ STAGES="post players" bash recipes/0_data.sh
 The rebuilt player packs and SFT player corpus are byte-identical to the ones our models trained on.
 
 To build chsm8-pre-training itself from the raw Lichess archive (download, filter, export), run `recipes/raw_lichess.sh`.
-The 30.1M described sides (players rated 2200 or more) are chsm8-post-training itself.
+The 30.1M described sides are chsm8-post-training itself. To select them from the 1B games instead, run
+`python prep/select_sides.py`: player rated 2200 or more, opponent 1800 or more, at most 100 sides per player. It gives
+exactly 30,085,219 sides, and the same rows for every player with 100 or fewer; our sample of the 199K capped players
+was unseeded, so their 100 differ.
 
 ## 6. Pretraining
 
