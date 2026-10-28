@@ -1,0 +1,3 @@
+numpy>=1.24
+pyarrow>=14
+chess>=1.10        # only for export.py (san/lan/pgn) and verify.py u16

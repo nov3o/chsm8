@@ -11,22 +11,24 @@ p.move("1. e4 c5 2. Nf3 d6 3. d4", prompt="attack the king at any cost")   # a l
 ```
 
 Everything is open: the weights, the 1.07B games, the 30M described game sides with all their labels, the labeler
-that wrote them, and the code below, which rebuilds each model from scratch.
+that wrote them, and the exact code of our runs, which rebuilds each model from scratch.
+Paper: [arXiv:2610.25356](https://arxiv.org/abs/2610.25356).
 
 ## Contents
 
 1. [Install](#1-install)
 2. [Play](#2-play)
 3. [The tokenizer](#3-the-tokenizer)
-4. [The nano model: the whole recipe on a laptop](#4-the-nano-model-the-whole-recipe-on-a-laptop)
-5. [Pretraining](#5-pretraining)
-6. [Writing the descriptions](#6-writing-the-descriptions)
-7. [SFT: learning to follow text](#7-sft-learning-to-follow-text)
-8. [DPO: making the text matter](#8-dpo-making-the-text-matter)
-9. [Player models](#9-player-models)
-10. [Evaluation](#10-evaluation)
-11. [Models and datasets](#11-models-and-datasets)
-12. [What's in the repo](#12-whats-in-the-repo)
+4. [The nano model: the whole pipeline on a laptop](#4-the-nano-model-the-whole-pipeline-on-a-laptop)
+5. [Data](#5-data)
+6. [Pretraining](#6-pretraining)
+7. [Writing the descriptions](#7-writing-the-descriptions)
+8. [SFT: learning to follow text](#8-sft-learning-to-follow-text)
+9. [DPO: making the text matter](#9-dpo-making-the-text-matter)
+10. [Player models](#10-player-models)
+11. [Evaluation](#11-evaluation)
+12. [Models and datasets](#12-models-and-datasets)
+13. [What's in the repo](#13-whats-in-the-repo)
 
 ## 1. Install
 
@@ -36,6 +38,9 @@ pip install "git+https://huggingface.co/LegumMagister/chsm8-tokenizer"   # the t
 pip install -e .
 huggingface-cli login                                                     # for the text encoder, see below
 ```
+
+For training on GPUs: `pip install -e ".[gpu]"` (flash-attention kernels); for labeling: `".[label]"` (vLLM); for the
+teacher: `".[teacher]"`. Evaluation needs a [Stockfish 17.1](https://stockfishchess.org) binary.
 
 The text encoder is [EmbeddingGemma-300m](https://huggingface.co/google/embeddinggemma-300m). It is gated: accept its
 license on its page once, then log in. The games-only models (chsm8-pt, the player models) don't need it.
@@ -91,131 +96,125 @@ rows, legal = tokenizer.analyze("1. e4 e5 2. Nf3")   # the rows so far + every l
 
 More in [`notebooks/tokenizer.ipynb`](notebooks/tokenizer.ipynb).
 
-## 4. The nano model: the whole recipe on a laptop
+## 4. The nano model: the whole pipeline on a laptop
 
-[`notebooks/nano.ipynb`](notebooks/nano.ipynb) runs pretraining and SFT on a CPU in a few minutes with a 1M-parameter
-model. It's the same code and the same loss as the real thing; only the sizes in `configs/nano*.yaml` are small.
-Raise `LIMIT` at the top for more data.
+[`notebooks/nano.ipynb`](notebooks/nano.ipynb) runs every training stage on a CPU in about 15 minutes, with **the same
+scripts as our real runs** (`src/`) on one month of Lichess and a 1M-parameter model. Only the sizes differ. Raise `LIMIT`
+at the top for more data. The full-size version of each command is in [`recipes/`](recipes) and
+[`notebooks/full.ipynb`](notebooks/full.ipynb).
 
-The same steps from the command line:
+## 5. Data
+
+Our training scripts read packed binary formats, not the Hugging Face datasets directly. [`prep/`](prep) turns the
+datasets back into exactly those formats, so the training code runs unchanged:
 
 ```bash
-# 3,000 games from one month of Lichess -> packed training records
-python scripts/data/prepare_pretraining.py --out data/nano --months 2026-06 --max-games 3000
-
-# pretrain a 4-layer, 128-wide model on them
-python scripts/train/pretrain.py configs/nano.yaml
-
-# 300 described game sides per split -> SFT with text
-python scripts/data/prepare_posttraining.py --sides data/nano_sides --max-sides 300
-python scripts/train/sft.py configs/nano_sft.yaml
+bash recipes/0_data.sh                    # everything, CPU only, about 2 TB
+STAGES="post players" bash recipes/0_data.sh
 ```
 
-## 5. Pretraining
+| stage | from | to | read by |
+|---|---|---|---|
+| `pre` | chsm8-pre-training | `data/3p`: packed records of 513 rows `(kind, src, dst, piece, promo)` | `src/train_pretrain.py` |
+| `post` | chsm8-post-training + moves | `data/sft30m_v21` (described sides), `data/games30m` (games) | `src/sft_ablate.py`, `src/dpo_sft.py`, `src/train_pretrain.py` |
+| `players` | chsm8-top-players | `data/players/<key>` (one pack per player), `data/sft_players` | `src/train_pretrain.py`, `src/sft_ablate.py` |
+| `labeler` | chsm8-distillation | `data/labeler/{train,val,test}.jsonl` | `src/labeler/train.py` |
+
+The rebuilt player packs are byte-identical to the ones our models trained on.
+
+## 6. Pretraining
 
 **chsm8-pt**: a 12-layer decoder (d=960) trained from scratch on 1.07B filtered Lichess games, games only, no text.
 One pass over 78.3B positions on 4 GH200 GPUs, about 40 hours. Result: 1837 Elo.
 
 ```bash
-# download chsm8-pre-training (162 months of Lichess) and turn every game into rows; ~1.5 TB
-python scripts/data/prepare_pretraining.py --out data/pt
-
-# train; the config holds our exact settings
-torchrun --nproc-per-node 4 scripts/train/pretrain.py configs/pt.yaml
+bash recipes/1_pretrain.sh                # torchrun ... src/train_pretrain.py --prepacked-dir data/3p ... (our exact arguments)
 ```
 
-Every config value can be overridden from the command line, e.g. `--batch_size=16`.
-
-## 6. Writing the descriptions
+## 7. Writing the descriptions
 
 To follow text, the model needs games paired with descriptions of how they were played. We wrote them in three steps.
 
-**1. The teacher.** Gemma-4-31B reads one side of a game — its moves, plus a card of measurements computed from the
-board (development, sacrifices, king pressure, trades, ...) — and writes five descriptions of its style, from terse to
-long. A rule-based check drops every set where a description contradicts the card (a "sacrifice" in a game with no
-sacrifices). That gave 2.4M clean sets: [chsm8-distillation](https://huggingface.co/datasets/LegumMagister/chsm8-distillation).
+**1. The teacher.** Gemma-4-31B reads one side of a game (its moves plus a card of measurements computed from the board:
+development, sacrifices, king pressure, trades, ...) and writes five descriptions of its style, from terse to long. A
+rule-based check drops every set where a description contradicts the card. That gave 2.4M clean sets:
+[chsm8-distillation](https://huggingface.co/datasets/LegumMagister/chsm8-distillation). The prompt builder and the
+production script are in [`prompt-ablation/`](prompt-ablation); they talk to any OpenAI-compatible Gemma-4-31B endpoint.
 
 ```bash
-pip install vllm
-python scripts/label/teacher.py --games games.parquet --out teacher.jsonl --tp 4
+bash recipes/4_teacher.sh                 # only needed to label new games
 ```
 
-**2. The labeler.** A full fine-tune of Gemma-3-1B on those 2.4M sets: one epoch, 4 GPUs, about 10 hours.
+**2. The labeler.** A full fine-tune of Gemma-3-1B on those 2.4M sets: one epoch, 4 GPUs, about 5 hours.
 
 ```bash
-torchrun --nproc-per-node 4 scripts/label/train_labeler.py --out runs/labeler
+bash recipes/5_labeler.sh                 # src/labeler/train.py
 ```
 
-**3. Labeling at scale.** The labeler describes 30M game sides, five descriptions each:
+**3. Labeling at scale.** The labeler describes 30M game sides, five descriptions each, with vLLM:
 [chsm8-post-training](https://huggingface.co/datasets/LegumMagister/chsm8-post-training).
 
 ```bash
-python scripts/label/label.py --games games.parquet --out labels.jsonl   # uses LegumMagister/chsm8-labeler-gemma3-1b
+bash recipes/6_label.sh                   # src/labeler/build_unlabeled.py, then src/labeler/label_shards.py per GPU
 ```
 
-The prompt and the measurement card are in [`scripts/label/prompt.py`](scripts/label/prompt.py), the check in
-[`scripts/label/grounding.py`](scripts/label/grounding.py).
+## 8. SFT: learning to follow text
 
-## 7. SFT: learning to follow text
-
-**chsm8-sft**: chsm8-pt plus cross-attention to the text encoder in its top 6 layers. One pass over 27.1M described
-training sides, each with all five descriptions, plus player games with prompts like *"play like Magnus Carlsen"*.
-The loss is on the described side's moves only; the opponent's moves are context. 8 GPUs, about 3 hours.
+**chsm8-sft**: chsm8-pt plus cross-attention to the frozen EmbeddingGemma-300m in its top 6 layers. One pass over 27.1M
+described training sides, plus player games with prompts like *"play like Magnus Carlsen"*. The loss is on the described
+side's moves only; the opponent's moves are context. 8 GPUs, 3.1 hours.
 
 ```bash
-# described sides from chsm8-post-training, moves joined from chsm8-pre-training
-python scripts/data/prepare_posttraining.py --sides data/sides --games data/games
-
-# player games from chsm8-top-players
-python scripts/data/prepare_players.py --packed data/players --sides data/player_sides
-
-torchrun --nproc-per-node 4 scripts/train/sft.py configs/sft.yaml
+bash recipes/7_sft.sh                     # src/sft_ablate.py
 ```
 
 Our SFT used the games of 99 top players; 14 of them are public, so this reproduces SFT with those 14.
 
-## 8. DPO: making the text matter
+## 9. DPO: making the text matter
 
 **chsm8** (the final model): DPO on chsm8-sft. No sampling and no reward model: the chosen sample is a game under its
 own description, the rejected one is the same game under another game's description. So the only thing the
-preference can teach is what the text should change. Two anchors keep the chess intact: the SFT loss and a KL term to
-the SFT model. One GPU, 20 minutes.
+preference can teach is what the text should change. The SFT loss and a KL term to the SFT model keep the chess intact.
+One GPU, 20 minutes.
 
 ```bash
-python scripts/train/dpo.py configs/dpo.yaml
+bash recipes/8_dpo.sh                     # src/dpo_sft.py
 ```
 
 Style adherence rises on every prompt we tested (queens traded early 53% → 67%, queenside castling 97.3% → 99.7%),
-and strength without a prompt stays the same (1792 vs. 1797 Elo for SFT).
+and strength without a prompt stays the same (1797 vs. 1792 Elo for SFT).
 
-## 9. Player models
+## 10. Player models
 
 Fourteen models that each play like one player, without any prompt: Carlsen, Kasparov, Fischer, Karpov, Nakamura,
-Caruana, Firouzja, and others. First, chsm8-pt continues on the 26M games of the post-training set (chsm8-player-base),
-then one short fine-tune per player on that player's own moves.
+Caruana, Firouzja, and others. First chsm8-pt continues on the 26M games of the post-training set (chsm8-player-base,
+1890 Elo), then one short fine-tune per player on that player's own moves.
 
 ```bash
-torchrun --nproc-per-node 4 scripts/train/pretrain.py configs/player_base.yaml
-python scripts/train/pretrain.py configs/player.yaml --data=data/players/kasparov --out=runs/player_kasparov
+bash recipes/2_player_base.sh             # src/train_pretrain.py, no text
+bash recipes/3_players.sh                 # all 14; or: bash recipes/3_players.sh 1503014   (Carlsen)
 ```
 
-## 10. Evaluation
+## 11. Evaluation
 
-Elo against Stockfish 17.1 at `UCI_Elo` 2000, 0.05 s per move, 1,000 games with alternating colours:
+Elo against Stockfish 17.1 at `UCI_Elo` 2000, 0.05 s per move, 240-ply cap, 1,000 games with alternating colours:
 
 ```bash
-python scripts/eval/elo.py --model LegumMagister/chsm8 --stockfish path/to/stockfish --games 1000
-python scripts/eval/elo.py --model LegumMagister/chsm8 --prompt "attack the king at any cost" --games 200
-python scripts/eval/elo.py --model LegumMagister/chsm8-player-carlsen --games 200
+bash recipes/9_eval.sh games checkpoints/pt100/chsm8_latest.pt pt
+bash recipes/9_eval.sh text checkpoints/dpo_v21/v21_label_kl1.pt dpo "trade queens as early as possible"
 ```
 
 | model | Elo |
 |---|---|
 | chsm8-pt | 1837 |
-| chsm8-sft | 1797 |
-| chsm8 | 1792 |
+| chsm8-sft | 1792 |
+| chsm8 | 1797 |
+| chsm8-player-base | 1890 |
 
-## 11. Models and datasets
+Every match we logged, all head-to-head games against the public models, and all 299 search runs with their
+settings are in [`results/`](results/README.md).
+
+## 12. Models and datasets
 
 | model | what it is |
 |---|---|
@@ -235,30 +234,28 @@ python scripts/eval/elo.py --model LegumMagister/chsm8-player-carlsen --games 20
 | [chsm8-game-labels](https://huggingface.co/datasets/LegumMagister/chsm8-game-labels) | every teacher set |
 | [chsm8-top-players](https://huggingface.co/datasets/LegumMagister/chsm8-top-players) | games of the 14 public players |
 
-## 12. What's in the repo
+## 13. What's in the repo
 
 ```
-chsm8/                  the library
-  model.py                the model: decoder, factorized heads, text cross-attention, loss
-  tokenizer.py            games -> rows (wraps chsm8_tok)
-  text.py                 the frozen text encoder
-  play.py                 choosing moves, playing Stockfish, Elo
-  data.py                 packed records and game sides on disk
-  checkpoint.py           saving, loading, converting checkpoints
-  style.py                what SFT and DPO share
-  players.py              the player prompts
-  config.py               yaml configs with command-line overrides
-scripts/
-  data/                   Hugging Face datasets -> training files
-  label/                  teacher, labeler training, labeling
-  train/                  pretrain.py, sft.py, dpo.py
-  eval/                   elo.py
-configs/                our exact settings, one file per model
-notebooks/              play, tokenizer, nano
+src/                    the training and evaluation code of our runs, as it ran
+  train_pretrain.py       pretraining, the games-only continuation and the player fine-tunes
+  sft_ablate.py           SFT
+  dpo_sft.py              DPO
+  model.py                the decoder, factorized heads, text cross-attention
+  benchmark_play.py       games against Stockfish; eval_sft.py: the same for text models
+  build_*.py              packed-data builders
+  labeler/                labeler training (train.py), labeling (label_shards.py), prompts (build_data.py)
+prompt-ablation/        the teacher: prompt and card builder (autolabel/), production labeling script
+prep/                   Hugging Face datasets -> the formats above
+recipes/                0_data.sh ... 9_eval.sh: our exact commands, one per stage
+notebooks/              nano (the pipeline on a CPU), full (the recipes), play, tokenizer
+chsm8/                  a small library to load the released models and play with them
+results/                every logged match and search run
 ```
 
-Note: the batch order in SFT and DPO is close to our runs but not identical, so a rerun gives a model of the same
-quality, not the same weights.
+The scripts in `src/` and `prompt-ablation/` are copies of what ran. Changes: local paths made repo-relative, and
+CPU fallbacks in `dpo_sft.py`, `eval_sft.py`, `benchmark_play.py` and `scripts/eval_player_fit.py` so the nano notebook
+runs without a GPU (GPU behaviour unchanged). Runs on other hardware give models of the same quality, not the same weights.
 
 ## License
 

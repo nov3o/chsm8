@@ -1,0 +1,605 @@
+[
+ {
+  "a": "allie2",
+  "b": "stockfish",
+  "games": 1000,
+  "wins_a": 707,
+  "draws": 170,
+  "losses_a": 123,
+  "score_a": 0.792
+ },
+ {
+  "a": "c1-4b",
+  "b": "stockfish",
+  "games": 1000,
+  "wins_a": 0,
+  "draws": 12,
+  "losses_a": 988,
+  "score_a": 0.006
+ },
+ {
+  "a": "chessgpt2-uci-12x12x768",
+  "b": "stockfish",
+  "games": 997,
+  "wins_a": 79,
+  "draws": 288,
+  "losses_a": 630,
+  "score_a": 0.2237
+ },
+ {
+  "a": "chesslfm",
+  "b": "stockfish",
+  "games": 997,
+  "wins_a": 80,
+  "draws": 123,
+  "losses_a": 794,
+  "score_a": 0.1419
+ },
+ {
+  "a": "chesslfm-search",
+  "b": "stockfish",
+  "games": 985,
+  "wins_a": 353,
+  "draws": 283,
+  "losses_a": 349,
+  "score_a": 0.502
+ },
+ {
+  "a": "chsm8-player-base",
+  "b": "allie2",
+  "games": 1000,
+  "wins_a": 107,
+  "draws": 210,
+  "losses_a": 683,
+  "score_a": 0.212
+ },
+ {
+  "a": "chsm8-player-base",
+  "b": "c1-4b",
+  "games": 1000,
+  "wins_a": 985,
+  "draws": 15,
+  "losses_a": 0,
+  "score_a": 0.9925
+ },
+ {
+  "a": "chsm8-player-base",
+  "b": "chessgpt2-uci-12x12x768",
+  "games": 1000,
+  "wins_a": 816,
+  "draws": 145,
+  "losses_a": 39,
+  "score_a": 0.8885
+ },
+ {
+  "a": "chsm8-player-base",
+  "b": "chesslfm",
+  "games": 1000,
+  "wins_a": 915,
+  "draws": 37,
+  "losses_a": 48,
+  "score_a": 0.9335
+ },
+ {
+  "a": "chsm8-player-base",
+  "b": "chesslfm-search",
+  "games": 1000,
+  "wins_a": 489,
+  "draws": 172,
+  "losses_a": 339,
+  "score_a": 0.575
+ },
+ {
+  "a": "chsm8-player-base",
+  "b": "deepmind-searchless-136m",
+  "games": 1000,
+  "wins_a": 0,
+  "draws": 207,
+  "losses_a": 793,
+  "score_a": 0.1035
+ },
+ {
+  "a": "chsm8-player-base",
+  "b": "deepmind-searchless-270m",
+  "games": 1000,
+  "wins_a": 0,
+  "draws": 142,
+  "losses_a": 858,
+  "score_a": 0.071
+ },
+ {
+  "a": "chsm8-player-base",
+  "b": "deepmind-searchless-9m",
+  "games": 1000,
+  "wins_a": 3,
+  "draws": 253,
+  "losses_a": 744,
+  "score_a": 0.1295
+ },
+ {
+  "a": "chsm8-player-base",
+  "b": "karvonen-chessgpt-lichess16",
+  "games": 1000,
+  "wins_a": 756,
+  "draws": 154,
+  "losses_a": 90,
+  "score_a": 0.833
+ },
+ {
+  "a": "chsm8-player-base",
+  "b": "kempner-chessformer-50m-1500",
+  "games": 1000,
+  "wins_a": 861,
+  "draws": 78,
+  "losses_a": 61,
+  "score_a": 0.9
+ },
+ {
+  "a": "chsm8-player-base",
+  "b": "maia2-blitz",
+  "games": 1000,
+  "wins_a": 601,
+  "draws": 233,
+  "losses_a": 166,
+  "score_a": 0.7175
+ },
+ {
+  "a": "chsm8-player-base",
+  "b": "maia3-79m",
+  "games": 1000,
+  "wins_a": 55,
+  "draws": 203,
+  "losses_a": 742,
+  "score_a": 0.1565
+ },
+ {
+  "a": "chsm8-player-base",
+  "b": "matilda-d12",
+  "games": 1000,
+  "wins_a": 1,
+  "draws": 80,
+  "losses_a": 919,
+  "score_a": 0.041
+ },
+ {
+  "a": "chsm8-player-base",
+  "b": "otter-15m",
+  "games": 1000,
+  "wins_a": 472,
+  "draws": 178,
+  "losses_a": 350,
+  "score_a": 0.561
+ },
+ {
+  "a": "chsm8-player-base",
+  "b": "queen",
+  "games": 200,
+  "wins_a": 7,
+  "draws": 55,
+  "losses_a": 138,
+  "score_a": 0.1725
+ },
+ {
+  "a": "chsm8-player-base",
+  "b": "stockfish",
+  "games": 1000,
+  "wins_a": 217,
+  "draws": 259,
+  "losses_a": 524,
+  "score_a": 0.3465
+ },
+ {
+  "a": "chsm8-player-base",
+  "b": "waterhorse-chessgpt-base-v1",
+  "games": 1000,
+  "wins_a": 895,
+  "draws": 83,
+  "losses_a": 22,
+  "score_a": 0.9365
+ },
+ {
+  "a": "chsm8-player-carlsen",
+  "b": "allie2",
+  "games": 1000,
+  "wins_a": 99,
+  "draws": 197,
+  "losses_a": 704,
+  "score_a": 0.1975
+ },
+ {
+  "a": "chsm8-player-carlsen",
+  "b": "c1-4b",
+  "games": 1000,
+  "wins_a": 988,
+  "draws": 12,
+  "losses_a": 0,
+  "score_a": 0.994
+ },
+ {
+  "a": "chsm8-player-carlsen",
+  "b": "chessgpt2-uci-12x12x768",
+  "games": 1000,
+  "wins_a": 844,
+  "draws": 133,
+  "losses_a": 23,
+  "score_a": 0.9105
+ },
+ {
+  "a": "chsm8-player-carlsen",
+  "b": "chesslfm",
+  "games": 1000,
+  "wins_a": 894,
+  "draws": 68,
+  "losses_a": 38,
+  "score_a": 0.928
+ },
+ {
+  "a": "chsm8-player-carlsen",
+  "b": "chesslfm-search",
+  "games": 1000,
+  "wins_a": 499,
+  "draws": 196,
+  "losses_a": 305,
+  "score_a": 0.597
+ },
+ {
+  "a": "chsm8-player-carlsen",
+  "b": "deepmind-searchless-136m",
+  "games": 1000,
+  "wins_a": 0,
+  "draws": 127,
+  "losses_a": 873,
+  "score_a": 0.0635
+ },
+ {
+  "a": "chsm8-player-carlsen",
+  "b": "deepmind-searchless-270m",
+  "games": 1000,
+  "wins_a": 0,
+  "draws": 244,
+  "losses_a": 756,
+  "score_a": 0.122
+ },
+ {
+  "a": "chsm8-player-carlsen",
+  "b": "deepmind-searchless-9m",
+  "games": 1000,
+  "wins_a": 7,
+  "draws": 319,
+  "losses_a": 674,
+  "score_a": 0.1665
+ },
+ {
+  "a": "chsm8-player-carlsen",
+  "b": "karvonen-chessgpt-lichess16",
+  "games": 1000,
+  "wins_a": 739,
+  "draws": 144,
+  "losses_a": 117,
+  "score_a": 0.811
+ },
+ {
+  "a": "chsm8-player-carlsen",
+  "b": "kempner-chessformer-50m-1500",
+  "games": 1000,
+  "wins_a": 896,
+  "draws": 86,
+  "losses_a": 18,
+  "score_a": 0.939
+ },
+ {
+  "a": "chsm8-player-carlsen",
+  "b": "maia2-blitz",
+  "games": 1000,
+  "wins_a": 614,
+  "draws": 205,
+  "losses_a": 181,
+  "score_a": 0.7165
+ },
+ {
+  "a": "chsm8-player-carlsen",
+  "b": "maia3-79m",
+  "games": 1000,
+  "wins_a": 114,
+  "draws": 199,
+  "losses_a": 687,
+  "score_a": 0.2135
+ },
+ {
+  "a": "chsm8-player-carlsen",
+  "b": "matilda-d12",
+  "games": 1000,
+  "wins_a": 0,
+  "draws": 32,
+  "losses_a": 968,
+  "score_a": 0.016
+ },
+ {
+  "a": "chsm8-player-carlsen",
+  "b": "otter-15m",
+  "games": 1000,
+  "wins_a": 511,
+  "draws": 199,
+  "losses_a": 290,
+  "score_a": 0.6105
+ },
+ {
+  "a": "chsm8-player-carlsen",
+  "b": "queen",
+  "games": 200,
+  "wins_a": 8,
+  "draws": 60,
+  "losses_a": 132,
+  "score_a": 0.19
+ },
+ {
+  "a": "chsm8-player-carlsen",
+  "b": "stockfish",
+  "games": 999,
+  "wins_a": 214,
+  "draws": 300,
+  "losses_a": 485,
+  "score_a": 0.3644
+ },
+ {
+  "a": "chsm8-player-carlsen",
+  "b": "waterhorse-chessgpt-base-v1",
+  "games": 1000,
+  "wins_a": 903,
+  "draws": 81,
+  "losses_a": 16,
+  "score_a": 0.9435
+ },
+ {
+  "a": "chsm8-pt",
+  "b": "allie2",
+  "games": 1000,
+  "wins_a": 66,
+  "draws": 137,
+  "losses_a": 797,
+  "score_a": 0.1345
+ },
+ {
+  "a": "chsm8-pt",
+  "b": "c1-4b",
+  "games": 1000,
+  "wins_a": 972,
+  "draws": 28,
+  "losses_a": 0,
+  "score_a": 0.986
+ },
+ {
+  "a": "chsm8-pt",
+  "b": "chessgpt2-uci-12x12x768",
+  "games": 1200,
+  "wins_a": 863,
+  "draws": 258,
+  "losses_a": 79,
+  "score_a": 0.8267
+ },
+ {
+  "a": "chsm8-pt",
+  "b": "chesslfm",
+  "games": 1000,
+  "wins_a": 881,
+  "draws": 67,
+  "losses_a": 52,
+  "score_a": 0.9145
+ },
+ {
+  "a": "chsm8-pt",
+  "b": "chesslfm-search",
+  "games": 1000,
+  "wins_a": 384,
+  "draws": 186,
+  "losses_a": 430,
+  "score_a": 0.477
+ },
+ {
+  "a": "chsm8-pt",
+  "b": "deepmind-searchless-136m",
+  "games": 1000,
+  "wins_a": 0,
+  "draws": 205,
+  "losses_a": 795,
+  "score_a": 0.1025
+ },
+ {
+  "a": "chsm8-pt",
+  "b": "deepmind-searchless-270m",
+  "games": 1000,
+  "wins_a": 0,
+  "draws": 160,
+  "losses_a": 840,
+  "score_a": 0.08
+ },
+ {
+  "a": "chsm8-pt",
+  "b": "deepmind-searchless-9m",
+  "games": 1000,
+  "wins_a": 31,
+  "draws": 237,
+  "losses_a": 732,
+  "score_a": 0.1495
+ },
+ {
+  "a": "chsm8-pt",
+  "b": "karvonen-chessgpt-lichess16",
+  "games": 1200,
+  "wins_a": 768,
+  "draws": 256,
+  "losses_a": 176,
+  "score_a": 0.7467
+ },
+ {
+  "a": "chsm8-pt",
+  "b": "kempner-chessformer-50m-1500",
+  "games": 1200,
+  "wins_a": 942,
+  "draws": 201,
+  "losses_a": 57,
+  "score_a": 0.8688
+ },
+ {
+  "a": "chsm8-pt",
+  "b": "maia2-blitz",
+  "games": 1200,
+  "wins_a": 616,
+  "draws": 331,
+  "losses_a": 253,
+  "score_a": 0.6512
+ },
+ {
+  "a": "chsm8-pt",
+  "b": "maia3-79m",
+  "games": 1000,
+  "wins_a": 52,
+  "draws": 176,
+  "losses_a": 772,
+  "score_a": 0.14
+ },
+ {
+  "a": "chsm8-pt",
+  "b": "matilda-d12",
+  "games": 1000,
+  "wins_a": 0,
+  "draws": 39,
+  "losses_a": 961,
+  "score_a": 0.0195
+ },
+ {
+  "a": "chsm8-pt",
+  "b": "otter-15m",
+  "games": 1000,
+  "wins_a": 367,
+  "draws": 249,
+  "losses_a": 384,
+  "score_a": 0.4915
+ },
+ {
+  "a": "chsm8-pt",
+  "b": "queen",
+  "games": 200,
+  "wins_a": 5,
+  "draws": 47,
+  "losses_a": 148,
+  "score_a": 0.1425
+ },
+ {
+  "a": "chsm8-pt",
+  "b": "stockfish",
+  "games": 999,
+  "wins_a": 139,
+  "draws": 283,
+  "losses_a": 577,
+  "score_a": 0.2808
+ },
+ {
+  "a": "chsm8-pt",
+  "b": "waterhorse-chessgpt-base-v1",
+  "games": 1200,
+  "wins_a": 970,
+  "draws": 168,
+  "losses_a": 62,
+  "score_a": 0.8783
+ },
+ {
+  "a": "deepmind-searchless-136m",
+  "b": "stockfish",
+  "games": 999,
+  "wins_a": 933,
+  "draws": 65,
+  "losses_a": 1,
+  "score_a": 0.9665
+ },
+ {
+  "a": "deepmind-searchless-270m",
+  "b": "stockfish",
+  "games": 982,
+  "wins_a": 880,
+  "draws": 102,
+  "losses_a": 0,
+  "score_a": 0.9481
+ },
+ {
+  "a": "deepmind-searchless-9m",
+  "b": "stockfish",
+  "games": 996,
+  "wins_a": 834,
+  "draws": 146,
+  "losses_a": 16,
+  "score_a": 0.9106
+ },
+ {
+  "a": "karvonen-chessgpt-lichess16",
+  "b": "stockfish",
+  "games": 999,
+  "wins_a": 190,
+  "draws": 269,
+  "losses_a": 540,
+  "score_a": 0.3248
+ },
+ {
+  "a": "kempner-chessformer-50m-1500",
+  "b": "stockfish",
+  "games": 1000,
+  "wins_a": 62,
+  "draws": 230,
+  "losses_a": 708,
+  "score_a": 0.177
+ },
+ {
+  "a": "maia2-blitz",
+  "b": "stockfish",
+  "games": 998,
+  "wins_a": 71,
+  "draws": 101,
+  "losses_a": 826,
+  "score_a": 0.1217
+ },
+ {
+  "a": "maia3-79m",
+  "b": "stockfish",
+  "games": 997,
+  "wins_a": 747,
+  "draws": 153,
+  "losses_a": 97,
+  "score_a": 0.826
+ },
+ {
+  "a": "matilda-d12",
+  "b": "stockfish",
+  "games": 1000,
+  "wins_a": 994,
+  "draws": 6,
+  "losses_a": 0,
+  "score_a": 0.997
+ },
+ {
+  "a": "otter-15m",
+  "b": "stockfish",
+  "games": 999,
+  "wins_a": 431,
+  "draws": 198,
+  "losses_a": 370,
+  "score_a": 0.5305
+ },
+ {
+  "a": "queen",
+  "b": "stockfish",
+  "games": 200,
+  "wins_a": 159,
+  "draws": 36,
+  "losses_a": 5,
+  "score_a": 0.885
+ },
+ {
+  "a": "waterhorse-chessgpt-base-v1",
+  "b": "stockfish",
+  "games": 999,
+  "wins_a": 52,
+  "draws": 246,
+  "losses_a": 701,
+  "score_a": 0.1752
+ }
+]
