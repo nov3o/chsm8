@@ -19,7 +19,7 @@ Paper: [arXiv:2610.25356](https://arxiv.org/abs/2610.25356).
 1. [Install](#1-install)
 2. [Play](#2-play)
 3. [The tokenizer](#3-the-tokenizer)
-4. [The nano model: the whole pipeline on a laptop](#4-the-nano-model-the-whole-pipeline-on-a-laptop)
+4. [The nano model: train a chess model on a laptop](#4-the-nano-model-train-a-chess-model-on-a-laptop)
 5. [Data](#5-data)
 6. [Pretraining](#6-pretraining)
 7. [Writing the descriptions](#7-writing-the-descriptions)
@@ -96,12 +96,12 @@ rows, legal = tokenizer.analyze("1. e4 e5 2. Nf3")   # the rows so far + every l
 
 More in [`notebooks/tokenizer.ipynb`](notebooks/tokenizer.ipynb).
 
-## 4. The nano model: the whole pipeline on a laptop
+## 4. The nano model: train a chess model on a laptop
 
-[`notebooks/nano.ipynb`](notebooks/nano.ipynb) runs every training stage on a CPU in about 15 minutes, with **the same
-scripts as our real runs** (`src/`) on one month of Lichess and a 1M-parameter model. Only the sizes differ. Raise `LIMIT`
-at the top for more data. The full-size version of each command is in [`recipes/`](recipes) and
-[`notebooks/full.ipynb`](notebooks/full.ipynb).
+[`notebooks/nano.ipynb`](notebooks/nano.ipynb) trains a 1M-parameter CHSM8 on 5,000 Lichess games in about 5 minutes
+on a CPU, in plain Python: the games are tokenized, packed, trained on and played with in the notebook's own cells, using
+our model, loss and tokenizer from `src/`. Raise `N_GAMES` and `STEPS` for a stronger model. Every training stage at
+full size (pretraining, SFT, DPO, player models) is in [`recipes/`](recipes), one script per stage; [`recipes/full.sh`](recipes/full.sh) runs them all in order.
 
 ## 5. Data
 
@@ -260,16 +260,16 @@ src/                    the training and evaluation code of our runs, as it ran
   labeler/                labeler training (train.py), labeling (label_shards.py), prompts (build_data.py)
 prompt-ablation/        the teacher: prompt and card builder (autolabel/), production labeling script
 prep/                   Hugging Face datasets -> the formats above; select_sides.py: the described sides from the 1B games
-recipes/                0_data.sh ... 9_eval.sh: our exact commands, one per stage; raw_lichess.sh,
+recipes/                0_data.sh ... 9_eval.sh: our exact commands, one per stage; full.sh: all of them; raw_lichess.sh,
                         label_cleaning.sh, paper_eval.sh
-notebooks/              nano (the pipeline on a CPU), full (the recipes), play, tokenizer
+notebooks/              nano (train a small model on a CPU), play, tokenizer
 chsm8/                  a small library to load the released models and play with them
 results/                every logged match and search run
 ```
 
 The scripts in `src/` and `prompt-ablation/` are copies of what ran. Changes: local paths made repo-relative, and
-CPU fallbacks in `dpo_sft.py`, `eval_sft.py`, `benchmark_play.py` and `scripts/eval_player_fit.py` so the nano notebook
-runs without a GPU (GPU behaviour unchanged). Runs on other hardware give models of the same quality, not the same weights.
+CPU fallbacks in `dpo_sft.py`, `eval_sft.py`, `benchmark_play.py` and `scripts/eval_player_fit.py` so they also run
+without a GPU (GPU behaviour unchanged). Runs on other hardware give models of the same quality, not the same weights.
 
 The architecture and hyperparameter searches (autoresearch) ran on a copy of
 [karpathy/autoresearch](https://github.com/karpathy/autoresearch) adapted to chess; the harness is not included, its
